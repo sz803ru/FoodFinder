@@ -1,0 +1,190 @@
+
+<div id="root"></div>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script>
+const { useState, useMemo } = React;
+
+const CAMPUSES = [
+  { id: "all",        label: "All Campuses",   color: "#888780",  bg: "#F1EFE8" },
+  { id: "college",    label: "College Ave",    color: "#CC0033",  bg: "#fff0f3" },
+  { id: "busch",      label: "Busch",          color: "#185FA5",  bg: "#E6F1FB" },
+  { id: "livingston", label: "Livingston",     color: "#3B6D11",  bg: "#EAF3DE" },
+  { id: "cook",       label: "Cook/Douglass",  color: "#854F0B",  bg: "#FAEEDA" },
+];
+
+const RESTAURANTS = [
+  { id:1,  name:"Stuff Yer Face",         img:"https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400&q=70", rating:4.5, reviews:842,  price:"$$",   cats:["Pizza","Bar"],            addr:"49 Ryder Ln",           campus:"college",    open:true  },
+  { id:2,  name:"Makeda Ethiopian",        img:"https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400&q=70", rating:4.7, reviews:1203, price:"$$",   cats:["Ethiopian","Vegetarian"], addr:"338 George St",         campus:"college",    open:true  },
+  { id:3,  name:"The Frog & The Peach",    img:"https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&q=70", rating:4.6, reviews:976,  price:"$$$$", cats:["American","Fine Dining"], addr:"29 Dennis St",          campus:"college",    open:false },
+  { id:4,  name:"Hansel 'N Griddle",       img:"https://images.unsplash.com/photo-1528736235302-52922df5c122?w=400&q=70", rating:4.2, reviews:534,  price:"$",    cats:["Breakfast","Sandwiches"],addr:"28 Morris St",          campus:"college",    open:true  },
+  { id:5,  name:"Destination Dogs",        img:"https://images.unsplash.com/photo-1533483595632-c5f0e57a1936?w=400&q=70", rating:4.1, reviews:318,  price:"$",    cats:["American","Hot Dogs"],    addr:"34 Wyckoff St",         campus:"college",    open:false },
+  { id:6,  name:"Steakhouse 85",           img:"https://images.unsplash.com/photo-1546833998-877b37c2e5c6?w=400&q=70", rating:4.8, reviews:2145, price:"$$$$", cats:["Steakhouse","Bar"],        addr:"85 Church St",          campus:"college",    open:true  },
+  { id:7,  name:"Buona Pizza",             img:"https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400&q=70", rating:4.3, reviews:412,  price:"$",    cats:["Pizza","Italian"],        addr:"201 College Ave",       campus:"college",    open:true  },
+  { id:8,  name:"Harvest Moon Brewery",    img:"https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=400&q=70", rating:4.2, reviews:621,  price:"$$",   cats:["American","Bar"],          addr:"392 George St",         campus:"college",    open:true  },
+  { id:9,  name:"Busch Dining Hall",       img:"https://images.unsplash.com/photo-1567521464027-f127ff144326?w=400&q=70", rating:3.5, reviews:189,  price:"$",    cats:["Dining Hall","American"], addr:"Busch Campus Ctr",      campus:"busch",      open:true  },
+  { id:10, name:"Quiznos (Busch)",         img:"https://images.unsplash.com/photo-1553909489-cd47e0907980?w=400&q=70", rating:3.7, reviews:143,  price:"$",    cats:["Sandwiches","Fast Food"], addr:"Busch Campus Ctr",      campus:"busch",      open:true  },
+  { id:11, name:"Starbucks (Busch)",       img:"https://images.unsplash.com/photo-1504630083234-14187a9df0f5?w=400&q=70", rating:4.0, reviews:312,  price:"$$",   cats:["Coffee","Cafe"],           addr:"Busch Student Ctr",     campus:"busch",      open:true  },
+  { id:12, name:"Subway (Busch)",          img:"https://images.unsplash.com/photo-1509722747041-616f39b57569?w=400&q=70", rating:3.4, reviews:98,   price:"$",    cats:["Sandwiches","Fast Food"], addr:"Hill Center, Busch",    campus:"busch",      open:false },
+  { id:13, name:"Livingston Dining Hall",  img:"https://images.unsplash.com/photo-1567521464027-f127ff144326?w=400&q=70", rating:3.6, reviews:231,  price:"$",    cats:["Dining Hall","American"], addr:"Livingston Campus Ctr", campus:"livingston", open:true  },
+  { id:14, name:"Panera Bread",            img:"https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400&q=70", rating:4.1, reviews:487,  price:"$$",   cats:["Bakery","Cafe"],           addr:"Livingston Plaza",      campus:"livingston", open:true  },
+  { id:15, name:"Taste of Asia",           img:"https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?w=400&q=70", rating:4.5, reviews:389,  price:"$$",   cats:["Asian","Chinese"],         addr:"Livingston Student Ctr",campus:"livingston", open:true  },
+  { id:16, name:"Dunkin' (Livingston)",    img:"https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=400&q=70", rating:3.8, reviews:162,  price:"$",    cats:["Coffee","Fast Food"],      addr:"Livingston Ave",        campus:"livingston", open:true  },
+  { id:17, name:"Neilson Dining Hall",     img:"https://images.unsplash.com/photo-1567521464027-f127ff144326?w=400&q=70", rating:3.8, reviews:204,  price:"$",    cats:["Dining Hall","American"], addr:"Douglass Campus",       campus:"cook",       open:true  },
+  { id:18, name:"Simply Sushi",            img:"https://images.unsplash.com/photo-1617196034183-421b4040ed20?w=400&q=70", rating:4.4, reviews:556,  price:"$$",   cats:["Sushi","Japanese"],        addr:"Cook Campus Ctr",       campus:"cook",       open:true  },
+  { id:19, name:"Rutgers Gardens Cafe",    img:"https://images.unsplash.com/photo-1521017432531-fbd92d768814?w=400&q=70", rating:4.3, reviews:274,  price:"$",    cats:["Cafe","American"],         addr:"Cook Campus",           campus:"cook",       open:false },
+  { id:20, name:"Christies",              img:"https://images.unsplash.com/photo-1550547660-d9450f859349?w=400&q=70", rating:4.0, reviews:198,  price:"$$",   cats:["American","Bar"],          addr:"Cook/Douglass Ctr",     campus:"cook",       open:true  },
+];
+
+const ALL_CATS = ["All","Pizza","American","Breakfast","Coffee","Sushi","Asian","Bar","Sandwiches","Dining Hall","Italian","Ethiopian"];
+
+function Stars({ rating }) {
+  return React.createElement("span", { style: { fontSize: 13, letterSpacing: -1 } },
+    [1,2,3,4,5].map(i => {
+      const filled = i <= Math.floor(rating);
+      const half = !filled && i === Math.ceil(rating) && rating % 1 >= 0.5;
+      return React.createElement("span", {
+        key: i,
+        style: { color: (filled || half) ? "#f59e0b" : "var(--color-border-secondary)", opacity: half ? 0.55 : 1 }
+      }, "★");
+    })
+  );
+}
+
+function CampusPill({ campusId }) {
+  const c = CAMPUSES.find(x => x.id === campusId) || CAMPUSES[0];
+  return React.createElement("span", {
+    style: { fontSize: 10, fontWeight: 500, padding: "2px 7px", borderRadius: 20, background: c.color, color: "#fff", whiteSpace: "nowrap" }
+  }, c.label);
+}
+
+function RestaurantCard({ r }) {
+  const [imgErr, setImgErr] = useState(false);
+  return React.createElement("div", {
+    style: { background: "var(--color-background-primary)", border: "0.5px solid var(--color-border-tertiary)", borderRadius: 12, overflow: "hidden", display: "flex", flexDirection: "column", transition: "transform 0.15s, border-color 0.15s", cursor: "default" },
+    onMouseEnter: e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.borderColor = "var(--color-border-secondary)"; },
+    onMouseLeave: e => { e.currentTarget.style.transform = ""; e.currentTarget.style.borderColor = "var(--color-border-tertiary)"; }
+  },
+    React.createElement("div", { style: { height: 120, position: "relative", background: "var(--color-background-secondary)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" } },
+      !imgErr && React.createElement("img", { src: r.img, alt: r.name, onError: () => setImgErr(true), style: { width: "100%", height: "100%", objectFit: "cover" } }),
+      React.createElement("div", { style: { position: "absolute", top: 7, left: 7 } }, React.createElement(CampusPill, { campusId: r.campus })),
+      React.createElement("span", {
+        style: { position: "absolute", top: 7, right: 7, fontSize: 10, fontWeight: 500, padding: "2px 7px", borderRadius: 20, background: r.open ? "#1a7f44" : "#555", color: "#fff" }
+      }, r.open ? "Open" : "Closed")
+    ),
+    React.createElement("div", { style: { padding: "11px 12px", flex: 1, display: "flex", flexDirection: "column", gap: 3 } },
+      React.createElement("div", { style: { fontSize: 14, fontWeight: 500, color: "var(--color-text-primary)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } }, r.name),
+      React.createElement("div", { style: { fontSize: 11, color: "var(--color-text-secondary)" } }, r.cats.join(" · ")),
+      React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 5, marginTop: 3 } },
+        React.createElement(Stars, { rating: r.rating }),
+        React.createElement("span", { style: { fontSize: 13, fontWeight: 500, color: "var(--color-text-primary)" } }, r.rating.toFixed(1)),
+        React.createElement("span", { style: { fontSize: 11, color: "var(--color-text-secondary)" } }, `(${r.reviews.toLocaleString()})`)
+      ),
+      React.createElement("div", { style: { marginTop: 4 } },
+        React.createElement("span", { style: { fontSize: 11, fontWeight: 500, background: "#fff0f3", color: "#9e0025", border: "0.5px solid #f5b3c0", borderRadius: 20, padding: "1px 7px" } }, r.price)
+      ),
+      React.createElement("div", { style: { fontSize: 11, color: "var(--color-text-tertiary)", marginTop: "auto", paddingTop: 5, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } }, r.addr)
+    ),
+    React.createElement("button", {
+      style: { margin: "8px 11px 11px", textAlign: "center", background: "#CC0033", color: "#fff", fontSize: 12, fontWeight: 500, padding: "7px", borderRadius: 8, border: "none", cursor: "pointer", transition: "background 0.15s" },
+      onMouseEnter: e => e.currentTarget.style.background = "#9e0025",
+      onMouseLeave: e => e.currentTarget.style.background = "#CC0033",
+      onClick: () => sendPrompt(`Tell me more about ${r.name} at Rutgers ${CAMPUSES.find(c=>c.id===r.campus)?.label} campus`)
+    }, "View details ↗")
+  );
+}
+
+function App() {
+  const [campus, setCampus] = useState("all");
+  const [cat, setCat] = useState("All");
+  const [search, setSearch] = useState("");
+  const [sort, setSort] = useState("default");
+  const [minRating, setMinRating] = useState(0);
+
+  const filtered = useMemo(() => {
+    let res = RESTAURANTS.filter(r =>
+      (campus === "all" || r.campus === campus) &&
+      r.rating >= minRating &&
+      r.name.toLowerCase().includes(search.toLowerCase()) &&
+      (cat === "All" || r.cats.includes(cat))
+    );
+    if (sort === "rating") res = [...res].sort((a,b) => b.rating - a.rating);
+    else if (sort === "reviews") res = [...res].sort((a,b) => b.reviews - a.reviews);
+    else if (sort === "reviews_asc") res = [...res].sort((a,b) => a.reviews - b.reviews);
+    return res;
+  }, [campus, cat, search, sort, minRating]);
+
+  return React.createElement("div", { style: { fontFamily: "var(--font-sans)" } },
+    React.createElement("div", { style: { background: "#CC0033", color: "#fff", padding: "1.1rem 1.5rem" } },
+      React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 8 } },
+        React.createElement("div", null,
+          React.createElement("h1", { style: { fontSize: 22, fontWeight: 500, letterSpacing: -0.3, margin: 0 } }, "Rutgers Campus Eats"),
+          React.createElement("p", { style: { fontSize: 13, opacity: 0.8, margin: "2px 0 0" } }, "New Brunswick, NJ · built with React")
+        ),
+        React.createElement("span", { style: { background: "rgba(255,255,255,0.2)", borderRadius: 20, padding: "3px 12px", fontSize: 12, fontWeight: 500, alignSelf: "center" } }, `${filtered.length} / ${RESTAURANTS.length} places`)
+      )
+    ),
+
+    React.createElement("div", { style: { display: "flex", borderBottom: "0.5px solid var(--color-border-tertiary)", background: "var(--color-background-primary)", overflowX: "auto" } },
+      CAMPUSES.map(c => {
+        const count = c.id === "all" ? RESTAURANTS.length : RESTAURANTS.filter(r => r.campus === c.id).length;
+        const active = campus === c.id;
+        return React.createElement("button", {
+          key: c.id,
+          onClick: () => { setCampus(c.id); setCat("All"); },
+          style: { flex: 1, minWidth: 95, padding: "10px 8px", textAlign: "center", fontSize: 12, fontWeight: 500, color: active ? c.color : "var(--color-text-secondary)", cursor: "pointer", borderBottom: active ? `2px solid ${c.color}` : "2px solid transparent", background: "none", border: "none", borderBottom: active ? `2px solid ${c.color}` : "2px solid transparent", transition: "all 0.15s", whiteSpace: "nowrap" }
+        },
+          React.createElement("span", { style: { display: "inline-block", width: 7, height: 7, borderRadius: "50%", background: c.color, marginRight: 5, verticalAlign: "middle" } }),
+          c.label,
+          React.createElement("span", { style: { opacity: 0.5, fontWeight: 400, marginLeft: 4 } }, `(${count})`)
+        );
+      })
+    ),
+
+    React.createElement("div", { style: { background: "var(--color-background-primary)", borderBottom: "0.5px solid var(--color-border-tertiary)", padding: "10px 1.5rem", display: "flex", gap: 8, flexWrap: "wrap" } },
+      React.createElement("input", { type: "text", placeholder: "Search restaurants...", value: search, onChange: e => setSearch(e.target.value), style: { flex: 1, minWidth: 130, fontSize: 13 } }),
+      React.createElement("select", { value: sort, onChange: e => setSort(e.target.value), style: { fontSize: 13 } },
+        React.createElement("option", { value: "default" }, "Default order"),
+        React.createElement("option", { value: "rating" }, "Highest rated"),
+        React.createElement("option", { value: "reviews" }, "Most reviews"),
+        React.createElement("option", { value: "reviews_asc" }, "Fewest reviews")
+      ),
+      React.createElement("select", { value: minRating, onChange: e => setMinRating(parseFloat(e.target.value)), style: { fontSize: 13 } },
+        React.createElement("option", { value: 0 }, "All ratings"),
+        React.createElement("option", { value: 3 }, "3+ stars"),
+        React.createElement("option", { value: 3.5 }, "3.5+ stars"),
+        React.createElement("option", { value: 4 }, "4+ stars"),
+        React.createElement("option", { value: 4.5 }, "4.5+ stars")
+      )
+    ),
+
+    React.createElement("div", { style: { padding: "10px 1.5rem 0", background: "var(--color-background-tertiary)", display: "flex", gap: 7, flexWrap: "wrap" } },
+      ALL_CATS.map(c =>
+        React.createElement("span", {
+          key: c,
+          onClick: () => setCat(c),
+          style: { fontSize: 12, padding: "4px 11px", borderRadius: 20, border: "0.5px solid var(--color-border-secondary)", background: cat === c ? "#CC0033" : "var(--color-background-primary)", color: cat === c ? "#fff" : "var(--color-text-secondary)", cursor: "pointer", transition: "all 0.1s" }
+        }, c)
+      )
+    ),
+
+    React.createElement("p", { style: { fontSize: 12, color: "var(--color-text-secondary)", padding: "8px 1.5rem 0", background: "var(--color-background-tertiary)" } },
+      `${filtered.length} of ${RESTAURANTS.length} restaurants`
+    ),
+
+    filtered.length === 0
+      ? React.createElement("div", { style: { textAlign: "center", padding: "3rem 1rem", color: "var(--color-text-secondary)", fontSize: 14, background: "var(--color-background-tertiary)" } },
+          React.createElement("p", { style: { fontSize: 32, margin: "0 0 8px" } }, "🔍"),
+          "No restaurants match your filters."
+        )
+      : React.createElement("div", {
+          style: { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(210px, 1fr))", gap: 13, padding: "1rem 1.5rem 1.5rem", background: "var(--color-background-tertiary)" }
+        },
+          filtered.map(r => React.createElement(RestaurantCard, { key: r.id, r }))
+        )
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(React.createElement(App));
+</script>
